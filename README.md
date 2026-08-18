@@ -4,31 +4,28 @@ CareTwin is an AI-powered Personal Healthcare Record (PHR) Management System des
 
 ---
 
-## 🎯 Week 2 Focus & Deliverables: Auth & Family Profiles API
+## 🎯 Week 3 Focus & Deliverables: Smart Record Locker API
 
-In Week 2, we implemented complete Authentication and multi-profile Family Management:
+In Week 3, we built the **Smart Record Locker** (Slide 5: Feature 01), allowing users to upload and manage medical documents safely:
 
-### 🔑 1. Authentication Engine (`/api/v1/auth`)
-- **`POST /api/v1/auth/register`**: Secure user registration. Hashes passwords using **Bcrypt** (`passlib`) and automatically generates a default `'Self'` family profile.
-- **`POST /api/v1/auth/login`**: Authenticates user credentials and issues a signed **JWT Access Token** (`python-jose`).
-- **`GET /api/v1/auth/me`**: Protected route returning current logged-in user details.
-
-### 👨‍👩‍👧‍👦 2. Family Profiles Engine (`/api/v1/family`)
-- **`POST /api/v1/family`**: Adds independent family member profiles (Father, Mother, Child, Spouse) under a single primary account.
-- **`GET /api/v1/family`**: Retrieves all family profiles linked to the current user.
-- **`GET /api/v1/family/{member_id}`**: Fetches details for a specific family profile with strict user-level data isolation (zero data mixing).
+### 📁 1. Record Upload & Management (`/api/v1/records`)
+- **`POST /api/v1/records/upload`**: Accepts `multipart/form-data` uploads (PDF, PNG, JPG). Validates document extension, generates UUID filenames to avoid naming collisions, and registers record metadata with `ocr_status = "PENDING"`.
+- **`GET /api/v1/records`**: Lists medical records for the logged-in user, with optional filters by `family_member_id` and `document_type` (Prescription, Lab Report, Discharge Summary, Radiology).
+- **`GET /api/v1/records/{record_id}`**: Retrieves metadata for a specific record.
+- **`GET /api/v1/records/{record_id}/download`**: Securely streams the actual document file for viewing/downloading.
+- **`DELETE /api/v1/records/{record_id}`**: Deletes the record metadata from DB and cleans up the associated file on disk.
 
 ---
 
-## 🧪 Testing Week 2 APIs
-Run automated Pytest suite for Auth and Family profiles:
+## 🧪 Testing Week 3 APIs
+Run automated Pytest suite for Smart Record Locker:
 ```bash
-python -m pytest tests/test_auth_family.py -v
+python -m pytest tests/test_records.py -v
 ```
 
 ---
 
-## 📁 Repository Structure (Week 2)
+## 📁 Repository Structure (Week 3)
 ```
 caretwin-backend/
 ├── app/
@@ -36,7 +33,8 @@ caretwin-backend/
 │   │   └── v1/
 │   │       ├── endpoints/
 │   │       │   ├── auth.py         # Registration, Login, JWT auth
-│   │       │   └── family.py       # Family member profiles CRUD
+│   │       │   ├── family.py       # Family member profiles CRUD
+│   │       │   └── records.py      # Smart Record Locker APIs
 │   │       └── router.py           # V1 API router
 │   ├── core/
 │   │   ├── config.py               # Pydantic Settings
@@ -48,7 +46,9 @@ caretwin-backend/
 │   │   └── schemas.py              # Pydantic validation schemas
 │   └── main.py                     # FastAPI app entrypoint
 ├── tests/
-│   └── test_auth_family.py         # Week 2 unit tests
+│   ├── test_auth_family.py         # Week 2 unit tests
+│   └── test_records.py             # Week 3 Record Locker unit tests
+├── uploads/                        # Document upload directory
 ├── .gitignore
 ├── requirements.txt
 └── README.md
