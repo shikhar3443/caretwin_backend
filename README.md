@@ -4,28 +4,40 @@ CareTwin is an AI-powered Personal Healthcare Record (PHR) Management System des
 
 ---
 
-## 🎯 Week 3 Focus & Deliverables: Smart Record Locker API
+## 🎯 Week 4 Focus & Deliverables: OCR & Medical NLP Pipeline
 
-In Week 3, we built the **Smart Record Locker** (Slide 5: Feature 01), allowing users to upload and manage medical documents safely:
+In Week 4, we implemented the automated document extraction pipeline (Slide 11):
 
-### 📁 1. Record Upload & Management (`/api/v1/records`)
-- **`POST /api/v1/records/upload`**: Accepts `multipart/form-data` uploads (PDF, PNG, JPG). Validates document extension, generates UUID filenames to avoid naming collisions, and registers record metadata with `ocr_status = "PENDING"`.
-- **`GET /api/v1/records`**: Lists medical records for the logged-in user, with optional filters by `family_member_id` and `document_type` (Prescription, Lab Report, Discharge Summary, Radiology).
-- **`GET /api/v1/records/{record_id}`**: Retrieves metadata for a specific record.
-- **`GET /api/v1/records/{record_id}/download`**: Securely streams the actual document file for viewing/downloading.
-- **`DELETE /api/v1/records/{record_id}`**: Deletes the record metadata from DB and cleans up the associated file on disk.
+### 🔬 1. Medical NLP & Parsing Service (`app/services/ocr_service.py`)
+- Regex and clinical pattern matching to extract Systolic BP, Diastolic BP, Fasting Blood Glucose, HbA1c, Hemoglobin, and Total Cholesterol.
+- Standardizes metrics into numerical values and medical units (`mmHg`, `mg/dL`, `%`, `g/dL`).
+
+### 🤖 2. OCR API Integration (`/api/v1/ocr`)
+- **`POST /api/v1/ocr/process/{record_id}`**: Triggers parsing on uploaded document text, updates `ocr_status = "COMPLETED"`, and inserts structured metrics into the DB.
+- **`POST /api/v1/ocr/payload/{record_id}`**: Direct integration webhook for PaddleOCR / EasyOCR teammate to ingest pre-parsed JSON.
 
 ---
 
-## 🧪 Testing Week 3 APIs
-Run automated Pytest suite for Smart Record Locker:
+## 🎯 Week 5 Focus & Deliverables: Health Timeline Engine
+
+In Week 5, we built the longitudinal time-series health timeline (Slide 6: Feature 02):
+
+### 📈 1. Timeline & Analytics APIs (`/api/v1/timeline`)
+- **`GET /api/v1/timeline/{family_member_id}`**: Returns chronological readings sorted by recorded date for visualization on React charts. Supports `metric_type` filter.
+- **`GET /api/v1/timeline/{family_member_id}/summary`**: Returns min, max, average, latest value, and reading count per metric type for dashboard summary cards.
+- **`POST /api/v1/timeline/measurement`**: Allows patients to manually log a blood pressure or glucose reading.
+
+---
+
+## 🧪 Testing Weeks 4 & 5 APIs
+Run automated Pytest suite for OCR and Timeline pipelines:
 ```bash
-python -m pytest tests/test_records.py -v
+python -m pytest tests/test_ocr_timeline.py -v
 ```
 
 ---
 
-## 📁 Repository Structure (Week 3)
+## 📁 Repository Structure (Weeks 4 & 5)
 ```
 caretwin-backend/
 ├── app/
@@ -34,21 +46,20 @@ caretwin-backend/
 │   │       ├── endpoints/
 │   │       │   ├── auth.py         # Registration, Login, JWT auth
 │   │       │   ├── family.py       # Family member profiles CRUD
-│   │       │   └── records.py      # Smart Record Locker APIs
+│   │       │   ├── records.py      # Smart Record Locker APIs
+│   │       │   ├── ocr.py          # OCR & Medical NLP APIs
+│   │       │   └── timeline.py     # Health Timeline APIs
 │   │       └── router.py           # V1 API router
 │   ├── core/
-│   │   ├── config.py               # Pydantic Settings
-│   │   ├── database.py             # SQLAlchemy Engine & Session
-│   │   └── security.py             # Bcrypt hashing & JWT functions
 │   ├── models/
-│   │   └── models.py               # Database schemas
 │   ├── schemas/
-│   │   └── schemas.py              # Pydantic validation schemas
-│   └── main.py                     # FastAPI app entrypoint
+│   └── services/
+│       └── ocr_service.py          # Medical NLP Regex & Parsing rules
 ├── tests/
 │   ├── test_auth_family.py         # Week 2 unit tests
-│   └── test_records.py             # Week 3 Record Locker unit tests
-├── uploads/                        # Document upload directory
+│   ├── test_records.py             # Week 3 unit tests
+│   └── test_ocr_timeline.py        # Weeks 4 & 5 unit tests
+├── uploads/
 ├── .gitignore
 ├── requirements.txt
 └── README.md

@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Enum, Text, Boolean
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship as rel
 from app.core.database import Base
 
 class RiskLevel(str, enum.Enum):
@@ -28,7 +28,7 @@ class User(Base):
     phone = Column(String(20), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    family_members = relationship("FamilyMember", back_populates="user", cascade="all, delete-orphan")
+    family_members = rel("FamilyMember", back_populates="user", cascade="all, delete-orphan")
 
 class FamilyMember(Base):
     __tablename__ = "family_members"
@@ -42,10 +42,10 @@ class FamilyMember(Base):
     blood_group = Column(String(10), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    user = relationship("User", back_populates="family_members")
-    medical_records = relationship("MedicalRecord", back_populates="family_member", cascade="all, delete-orphan")
-    measurements = relationship("Measurement", back_populates="family_member", cascade="all, delete-orphan")
-    trend_alerts = relationship("TrendAlert", back_populates="family_member", cascade="all, delete-orphan")
+    user = rel("User", back_populates="family_members")
+    medical_records = rel("MedicalRecord", back_populates="family_member", cascade="all, delete-orphan")
+    measurements = rel("Measurement", back_populates="family_member", cascade="all, delete-orphan")
+    trend_alerts = rel("TrendAlert", back_populates="family_member", cascade="all, delete-orphan")
 
 class MedicalRecord(Base):
     __tablename__ = "medical_records"
@@ -58,8 +58,8 @@ class MedicalRecord(Base):
     upload_date = Column(DateTime, default=datetime.utcnow)
     ocr_status = Column(String(50), default="COMPLETED") # PENDING, PROCESSING, COMPLETED, FAILED
 
-    family_member = relationship("FamilyMember", back_populates="medical_records")
-    measurements = relationship("Measurement", back_populates="record", cascade="all, delete-orphan")
+    family_member = rel("FamilyMember", back_populates="medical_records")
+    measurements = rel("Measurement", back_populates="record", cascade="all, delete-orphan")
 
 class Measurement(Base):
     __tablename__ = "measurements"
@@ -72,8 +72,8 @@ class Measurement(Base):
     unit = Column(String(20), nullable=False) # mmHg, mg/dL, g/dL, %
     recorded_date = Column(DateTime, default=datetime.utcnow)
 
-    family_member = relationship("FamilyMember", back_populates="measurements")
-    record = relationship("MedicalRecord", back_populates="measurements")
+    family_member = rel("FamilyMember", back_populates="measurements")
+    record = rel("MedicalRecord", back_populates="measurements")
 
 class TrendAlert(Base):
     __tablename__ = "trend_alerts"
@@ -86,7 +86,7 @@ class TrendAlert(Base):
     flagged_date = Column(DateTime, default=datetime.utcnow)
     is_acknowledged = Column(Boolean, default=False)
 
-    family_member = relationship("FamilyMember", back_populates="trend_alerts")
+    family_member = rel("FamilyMember", back_populates="trend_alerts")
 
 class DoctorShare(Base):
     __tablename__ = "doctor_shares"
