@@ -24,8 +24,14 @@ def process_record_ocr(
     if not record:
         raise HTTPException(status_code=404, detail="Medical record not found")
 
-    text_to_process = raw_text_input or "BP: 138/88 mmHg, Fasting Glucose: 126 mg/dL, HbA1c: 6.8%, Hemoglobin: 13.5 g/dL"
-    extracted_data = OCRService.extract_metrics_from_text(text_to_process, record.upload_date)
+    if raw_text_input:
+        extracted_data = OCRService.extract_metrics_from_text(raw_text_input, record.upload_date)
+        raw_text = raw_text_input
+    else:
+        # Run teammate OCR pipeline on actual uploaded file on disk
+        result = OCRService.process_file(record.file_path, record.upload_date)
+        extracted_data = result["metrics"]
+        raw_text = result["raw_text"]
 
     created_fields = []
     for item in extracted_data:
@@ -46,7 +52,7 @@ def process_record_ocr(
     return OCRProcessResponse(
         record_id=record.id,
         extracted_fields=created_fields,
-        raw_text=text_to_process
+        raw_text=raw_text
     )
 
 @router.post("/payload/{record_id}", response_model=OCRProcessResponse)
