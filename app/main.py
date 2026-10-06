@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import engine, Base
 from app.api.v1.router import api_router
+from app.api.v1.endpoints.emergency import public_page_router
+import app.models.emergency  # registers emergency_profiles, emergency_qr_tokens, emergency_access_logs
 
 # Automatically initialize database tables on startup
 Base.metadata.create_all(bind=engine)
@@ -24,6 +26,7 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+app.include_router(public_page_router)
 
 @app.get("/", tags=["Health Check"])
 def root():

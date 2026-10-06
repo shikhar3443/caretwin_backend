@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     DATABASE_URL: str = "sqlite:///./caretwin.db"
     UPLOAD_DIR: str = "./uploads"
+    PUBLIC_BASE_URL: str = "http://localhost:8000"
 
     class Config:
         case_sensitive = True
