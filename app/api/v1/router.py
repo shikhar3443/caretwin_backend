@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, family, records, ocr, timeline, trends, doctor_share, emergency
+from app.api.v1.endpoints import auth, family, records, ocr, timeline, trends, doctor_share, emergency, predictions
 
 api_router = APIRouter()
 
@@ -11,3 +11,4 @@ api_router.include_router(timeline.router)
 api_router.include_router(trends.router)
 api_router.include_router(doctor_share.router)
 api_router.include_router(emergency.router)
+api_router.include_router(predictions.router)
