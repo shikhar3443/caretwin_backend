@@ -9,6 +9,26 @@ import app.models.emergency  # registers emergency_profiles, emergency_qr_tokens
 # Automatically initialize database tables on startup
 Base.metadata.create_all(bind=engine)
 
+def _migrate_db_columns():
+    """Ensure any newly added columns exist in existing SQLite/Postgres tables."""
+    with engine.connect() as conn:
+        try:
+            for col, col_type in [
+                ("quality_status", "VARCHAR(50)"),
+                ("ocr_confidence", "FLOAT"),
+                ("diagnosis", "TEXT"),
+                ("medications", "TEXT")
+            ]:
+                try:
+                    conn.execute(f"ALTER TABLE medical_records ADD COLUMN {col} {col_type}")
+                    conn.commit()
+                except Exception:
+                    pass  # column already exists
+        except Exception:
+            pass
+
+_migrate_db_columns()
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,

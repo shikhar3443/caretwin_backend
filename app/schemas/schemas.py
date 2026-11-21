@@ -55,6 +55,10 @@ class MedicalRecordOut(BaseModel):
     file_path: str
     upload_date: datetime
     ocr_status: str
+    quality_status: Optional[str] = None
+    ocr_confidence: Optional[float] = None
+    diagnosis: Optional[str] = None
+    medications: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

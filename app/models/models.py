@@ -56,7 +56,11 @@ class MedicalRecord(Base):
     document_type = Column(String(50), default="Prescription") # Prescription, Lab Report, Discharge Summary
     file_path = Column(String(500), nullable=False)
     upload_date = Column(DateTime, default=datetime.utcnow)
-    ocr_status = Column(String(50), default="COMPLETED") # PENDING, PROCESSING, COMPLETED, FAILED
+    ocr_status = Column(String(50), default="COMPLETED") # PENDING, PROCESSING, COMPLETED, STORED_ONLY, FAILED
+    quality_status = Column(String(50), nullable=True) # printed, handwritten_or_mixed, unusable
+    ocr_confidence = Column(Float, nullable=True)
+    diagnosis = Column(Text, nullable=True)
+    medications = Column(Text, nullable=True) # JSON array of {name, dosage}
 
     family_member = rel("FamilyMember", back_populates="medical_records")
     measurements = rel("Measurement", back_populates="record", cascade="all, delete-orphan")

@@ -27,11 +27,19 @@ def process_record_ocr(
     if raw_text_input:
         extracted_data = OCRService.extract_metrics_from_text(raw_text_input, record.upload_date)
         raw_text = raw_text_input
+        record.ocr_status = "COMPLETED"
     else:
         # Run teammate OCR pipeline on actual uploaded file on disk
         result = OCRService.process_file(record.file_path, record.upload_date)
         extracted_data = result["metrics"]
         raw_text = result["raw_text"]
+        record.ocr_status = result.get("status", "COMPLETED")
+        record.quality_status = result.get("quality_status")
+        record.ocr_confidence = result.get("confidence")
+        if result.get("diagnosis"):
+            record.diagnosis = result["diagnosis"]
+        if result.get("medications"):
+            record.medications = result["medications"]
 
     created_fields = []
     for item in extracted_data:
@@ -46,7 +54,6 @@ def process_record_ocr(
         db.add(m)
         created_fields.append(ExtractedField(**item))
 
-    record.ocr_status = "COMPLETED"
     db.commit()
 
     return OCRProcessResponse(
