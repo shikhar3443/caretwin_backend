@@ -3,9 +3,11 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from app.core.config import settings
 
 db_url = settings.DATABASE_URL
-# Fix Render's legacy postgres:// prefix for SQLAlchemy
+# Fix Render's legacy postgres:// prefix and route explicitly to psycopg2
 if db_url.startswith("postgres://"):
-    db_url = db_url.replace("postgres://", "postgresql://", 1)
+    db_url = db_url.replace("postgres://", "postgresql+psycopg2://", 1)
+elif db_url.startswith("postgresql://") and not db_url.startswith("postgresql+"):
+    db_url = db_url.replace("postgresql://", "postgresql+psycopg2://", 1)
 
 # For SQLite, check_same_thread is needed. For Postgres, it will be ignored.
 connect_args = {"check_same_thread": False} if db_url.startswith("sqlite") else {}
