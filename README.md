@@ -1,12 +1,19 @@
 # CareTwin Backend 🏥🤖
 ### *AI-Powered Personal Healthcare Record (PHR) & Longitudinal Health Intelligence Platform*
 
+[![Live API Docs](https://img.shields.io/badge/Live_API-Swagger_Docs-009688.svg?style=for-the-badge&logo=fastapi)](https://caretwin-backend-qkql.onrender.com/docs)
+[![Live Frontend](https://img.shields.io/badge/Live_Frontend-Vercel-000000.svg?style=for-the-badge&logo=vercel)](https://caretwin-frontend.vercel.app/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110.0-009688.svg?style=flat&logo=fastapi)](https://fastapi.tiangolo.com)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776AB.svg?style=flat&logo=python)](https://python.org)
 [![XGBoost](https://img.shields.io/badge/XGBoost-ML%20Inference-EB5424.svg?style=flat&logo=scikitlearn)](https://xgboost.readthedocs.io/)
 [![Tesseract OCR](https://img.shields.io/badge/OCR-Tesseract%205.x-blue.svg?style=flat)](https://github.com/tesseract-ocr/tesseract)
 [![Tests Passing](https://img.shields.io/badge/Tests-6%2F6%20Passing-brightgreen.svg?style=flat&logo=pytest)](https://docs.pytest.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+---
+
+> 🚀 **Live Production API:** [https://caretwin-backend-qkql.onrender.com/docs](https://caretwin-backend-qkql.onrender.com/docs)  
+> 🌐 **Live Web Application:** [https://caretwin-frontend.vercel.app/](https://caretwin-frontend.vercel.app/)
 
 ---
 
