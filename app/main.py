@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 from app.core.config import settings
 from app.core.database import engine, Base
 from app.api.v1.router import api_router
@@ -20,7 +21,7 @@ def _migrate_db_columns():
                 ("medications", "TEXT")
             ]:
                 try:
-                    conn.execute(f"ALTER TABLE medical_records ADD COLUMN {col} {col_type}")
+                    conn.execute(text(f"ALTER TABLE medical_records ADD COLUMN {col} {col_type}"))
                     conn.commit()
                 except Exception:
                     pass  # column already exists
@@ -36,10 +37,10 @@ app = FastAPI(
     description="CareTwin Backend REST APIs - AI-Powered Personal Healthcare Record Management System"
 )
 
-# Enable CORS for Frontend integration with regex origin matching for localhost & 127.0.0.1
+# Enable CORS for Frontend integration (supports localhost and deployed frontend domains like Vercel)
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:[0-9]+)?",
+    allow_origin_regex=r"https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
