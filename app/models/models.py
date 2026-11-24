@@ -1,6 +1,6 @@
 import enum
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Enum, Text, Boolean, LargeBinary
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Enum, Text, Boolean
 from sqlalchemy.orm import relationship as rel
 from app.core.database import Base
 
@@ -61,8 +61,6 @@ class MedicalRecord(Base):
     ocr_confidence = Column(Float, nullable=True)
     diagnosis = Column(Text, nullable=True)
     medications = Column(Text, nullable=True) # JSON array of {name, dosage}
-    file_data = Column(LargeBinary, nullable=True) # Persistent file bytes in DB
-    original_filename = Column(String(500), nullable=True) # Original filename as uploaded by user
 
     family_member = rel("FamilyMember", back_populates="medical_records")
     measurements = rel("Measurement", back_populates="record", cascade="all, delete-orphan")

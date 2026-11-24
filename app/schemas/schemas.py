@@ -73,7 +73,6 @@ class MedicalRecordOut(BaseModel):
     title: str
     document_type: str
     file_path: str
-    original_filename: Optional[str] = None
     upload_date: datetime
     ocr_status: str
     quality_status: Optional[str] = None

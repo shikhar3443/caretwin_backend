@@ -2,7 +2,7 @@ import os
 import uuid
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.config import settings
@@ -52,8 +52,6 @@ async def upload_medical_record(
         title=title,
         document_type=document_type,
         file_path=file_path,
-        file_data=contents,
-        original_filename=file.filename,
         ocr_status="PENDING"
     )
     db.add(record)
@@ -105,35 +103,10 @@ def download_medical_record_file(
         FamilyMember.user_id == current_user.id
     ).first()
 
-    if not record:
-        raise HTTPException(status_code=404, detail="Medical record not found")
+    if not record or not os.path.exists(record.file_path):
+        raise HTTPException(status_code=404, detail="Medical record file not found")
 
-    # Determine content type and filename
-    # Prefer original_filename, fall back to UUID filename from file_path
-    ext = os.path.splitext(record.file_path)[1].lower() if record.file_path else ""
-    content_type_map = {
-        ".pdf": "application/pdf",
-        ".png": "image/png",
-        ".jpg": "image/jpeg",
-        ".jpeg": "image/jpeg",
-    }
-    content_type = content_type_map.get(ext, "application/octet-stream")
-    # Use the original filename the user uploaded if available
-    filename = record.original_filename or (os.path.basename(record.file_path) if record.file_path else f"record_{record.id}{ext}")
-
-    # Try disk file first (fast path — available right after upload before restart)
-    if record.file_path and os.path.exists(record.file_path):
-        return FileResponse(path=record.file_path, filename=filename, media_type=content_type)
-
-    # Fall back to bytes stored in PostgreSQL (survives Render container restarts)
-    if record.file_data:
-        return Response(
-            content=record.file_data,
-            media_type=content_type,
-            headers={"Content-Disposition": f'attachment; filename="{filename}"'}
-        )
-
-    raise HTTPException(status_code=404, detail="File not found. Please re-upload this record.")
+    return FileResponse(path=record.file_path, filename=os.path.basename(record.file_path))
 
 @router.delete("/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_medical_record(
