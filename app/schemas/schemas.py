@@ -46,22 +46,6 @@ class FamilyMemberOut(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-# Medical Record Schemas
-class MedicalRecordOut(BaseModel):
-    id: int
-    family_member_id: int
-    title: str
-    document_type: str
-    file_path: str
-    upload_date: datetime
-    ocr_status: str
-    quality_status: Optional[str] = None
-    ocr_confidence: Optional[float] = None
-    diagnosis: Optional[str] = None
-    medications: Optional[str] = None
-
-    model_config = ConfigDict(from_attributes=True)
-
 # Measurement Schemas
 class MeasurementCreate(BaseModel):
     family_member_id: int
@@ -79,6 +63,23 @@ class MeasurementOut(BaseModel):
     value_numeric: float
     unit: str
     recorded_date: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+# Medical Record Schemas
+class MedicalRecordOut(BaseModel):
+    id: int
+    family_member_id: int
+    title: str
+    document_type: str
+    file_path: str
+    upload_date: datetime
+    ocr_status: str
+    quality_status: Optional[str] = None
+    ocr_confidence: Optional[float] = None
+    diagnosis: Optional[str] = None
+    medications: Optional[str] = None
+    measurements: List[MeasurementOut] = []
 
     model_config = ConfigDict(from_attributes=True)
 
