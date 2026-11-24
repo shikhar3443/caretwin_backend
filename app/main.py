@@ -14,11 +14,14 @@ def _migrate_db_columns():
     """Ensure any newly added columns exist in existing SQLite/Postgres tables."""
     with engine.connect() as conn:
         try:
+            col_bytea = "BYTEA" if not str(engine.url).startswith("sqlite") else "BLOB"
             for col, col_type in [
                 ("quality_status", "VARCHAR(50)"),
                 ("ocr_confidence", "FLOAT"),
                 ("diagnosis", "TEXT"),
-                ("medications", "TEXT")
+                ("medications", "TEXT"),
+                ("file_data", col_bytea),
+                ("original_filename", "VARCHAR(500)"),
             ]:
                 try:
                     conn.execute(text(f"ALTER TABLE medical_records ADD COLUMN {col} {col_type}"))

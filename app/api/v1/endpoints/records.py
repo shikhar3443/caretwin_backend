@@ -53,6 +53,7 @@ async def upload_medical_record(
         document_type=document_type,
         file_path=file_path,
         file_data=contents,
+        original_filename=file.filename,
         ocr_status="PENDING"
     )
     db.add(record)
@@ -107,7 +108,8 @@ def download_medical_record_file(
     if not record:
         raise HTTPException(status_code=404, detail="Medical record not found")
 
-    # Determine content type from filename extension
+    # Determine content type and filename
+    # Prefer original_filename, fall back to UUID filename from file_path
     ext = os.path.splitext(record.file_path)[1].lower() if record.file_path else ""
     content_type_map = {
         ".pdf": "application/pdf",
@@ -116,9 +118,10 @@ def download_medical_record_file(
         ".jpeg": "image/jpeg",
     }
     content_type = content_type_map.get(ext, "application/octet-stream")
-    filename = os.path.basename(record.file_path) if record.file_path else f"record_{record.id}{ext}"
+    # Use the original filename the user uploaded if available
+    filename = record.original_filename or (os.path.basename(record.file_path) if record.file_path else f"record_{record.id}{ext}")
 
-    # Try disk file first (fast path)
+    # Try disk file first (fast path — available right after upload before restart)
     if record.file_path and os.path.exists(record.file_path):
         return FileResponse(path=record.file_path, filename=filename, media_type=content_type)
 
@@ -130,7 +133,7 @@ def download_medical_record_file(
             headers={"Content-Disposition": f'attachment; filename="{filename}"'}
         )
 
-    raise HTTPException(status_code=404, detail="Medical record file not found on server")
+    raise HTTPException(status_code=404, detail="File not found. Please re-upload this record.")
 
 @router.delete("/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_medical_record(
