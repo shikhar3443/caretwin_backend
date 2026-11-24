@@ -2,7 +2,7 @@ import os
 import uuid
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.config import settings
@@ -52,6 +52,7 @@ async def upload_medical_record(
         title=title,
         document_type=document_type,
         file_path=file_path,
+        file_data=contents,
         ocr_status="PENDING"
     )
     db.add(record)
@@ -103,10 +104,33 @@ def download_medical_record_file(
         FamilyMember.user_id == current_user.id
     ).first()
 
-    if not record or not os.path.exists(record.file_path):
-        raise HTTPException(status_code=404, detail="Medical record file not found")
+    if not record:
+        raise HTTPException(status_code=404, detail="Medical record not found")
 
-    return FileResponse(path=record.file_path, filename=os.path.basename(record.file_path))
+    # Determine content type from filename extension
+    ext = os.path.splitext(record.file_path)[1].lower() if record.file_path else ""
+    content_type_map = {
+        ".pdf": "application/pdf",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+    }
+    content_type = content_type_map.get(ext, "application/octet-stream")
+    filename = os.path.basename(record.file_path) if record.file_path else f"record_{record.id}{ext}"
+
+    # Try disk file first (fast path)
+    if record.file_path and os.path.exists(record.file_path):
+        return FileResponse(path=record.file_path, filename=filename, media_type=content_type)
+
+    # Fall back to bytes stored in PostgreSQL (survives Render container restarts)
+    if record.file_data:
+        return Response(
+            content=record.file_data,
+            media_type=content_type,
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+        )
+
+    raise HTTPException(status_code=404, detail="Medical record file not found on server")
 
 @router.delete("/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_medical_record(
